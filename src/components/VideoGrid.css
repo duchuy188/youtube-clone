@@ -25,6 +25,9 @@
 }
 
 .video-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -61,7 +64,10 @@
 }
 
 .video-info {
+  flex-grow: 1;
   padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
 }
 
 .video-info h3 {
@@ -86,6 +92,7 @@
   color: #606060;
   display: flex;
   align-items: center;
+  margin-top: auto; /* Đẩy stats xuống dưới */
 }
 
 .video-stats span {

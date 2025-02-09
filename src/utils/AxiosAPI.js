@@ -1,48 +1,51 @@
-import axios from 'axios';
-const API_KEY = 'AIzaSyAQbqvxsgVCSn2KPbfPLHU19Je-HPmCEX4';
+import axios from "axios";
+
+const API_KEY = "AIzaSyAQbqvxsgVCSn2KPbfPLHU19Je-HPmCEX4";
 const MAX_RESULTS = 12;
 
 const youtubeApi = axios.create({
-  baseURL: 'https://www.googleapis.com/youtube/v3',
+  baseURL: "https://www.googleapis.com/youtube/v3",
   params: {
     key: API_KEY,
   },
 });
-  
-export const fetchPopularVideos = async (pageToken = '') => {
+
+const fetchPopularVideos = async (pageToken = "") => {
   try {
-    const response = await youtubeApi.get('/videos', {
+    const response = await youtubeApi.get("/videos", {
       params: {
-        part: 'snippet,statistics,contentDetails',
-        chart: 'mostPopular',
+        part: "snippet,statistics,contentDetails",
+        chart: "mostPopular",
         maxResults: MAX_RESULTS,
         pageToken,
-        regionCode: 'US',
+        regionCode: "US",
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching popular videos:', error);
+    console.error("Error fetching popular videos:", error);
     throw error;
   }
 };
 
-export const searchVideos = async (query, pageToken = '') => {
+const searchVideos = async (query, pageToken = "") => {
   try {
-    const searchResponse = await youtubeApi.get('/search', {
+    const searchResponse = await youtubeApi.get("/search", {
       params: {
-        part: 'snippet',
+        part: "snippet",
         maxResults: MAX_RESULTS,
         q: query,
-        type: 'video',
+        type: "video",
         pageToken,
       },
     });
 
-    const videoIds = searchResponse.data.items.map(item => item.id.videoId).join(',');
-    const videoResponse = await youtubeApi.get('/videos', {
+    const videoIds = searchResponse.data.items
+      .map((item) => item.id.videoId)
+      .join(",");
+    const videoResponse = await youtubeApi.get("/videos", {
       params: {
-        part: 'snippet,statistics,contentDetails',
+        part: "snippet,statistics,contentDetails",
         id: videoIds,
       },
     });
@@ -52,100 +55,100 @@ export const searchVideos = async (query, pageToken = '') => {
       nextPageToken: searchResponse.data.nextPageToken,
     };
   } catch (error) {
-    console.error('Error searching videos:', error);
+    console.error("Error searching videos:", error);
     throw error;
   }
 };
 
-export const fetchVideoDetails = async (videoId) => {
+const fetchVideosByCategory = async (categoryId, pageToken = "") => {
   try {
-    const response = await youtubeApi.get('/videos', {
+    const response = await youtubeApi.get("/videos", {
       params: {
-        part: 'snippet,statistics,contentDetails',
-        id: videoId,
+        part: "snippet,statistics,contentDetails",
+        chart: "mostPopular",
+        maxResults: MAX_RESULTS,
+        pageToken,
+        videoCategoryId: categoryId,
+        regionCode: "US",
       },
     });
-    return response.data.items[0];
+    return response.data;
   } catch (error) {
-    console.error('Error fetching video details:', error);
+    console.error("Error fetching videos by category:", error);
     throw error;
   }
 };
 
-export const fetchRelatedVideos = async (videoId) => {
+const fetchVideoDetails = async (videoId) => {
   try {
-    const relatedResponse = await youtubeApi.get('/search', {
+    const [videoResponse, commentsResponse] = await Promise.all([
+      youtubeApi.get("/videos", {
+        params: {
+          part: "snippet,statistics,contentDetails",
+          id: videoId,
+        },
+      }),
+      youtubeApi.get("/commentThreads", {
+        params: {
+          part: "snippet,replies",
+          videoId: videoId,
+          maxResults: 20,
+          order: "relevance",
+        },
+      }),
+    ]);
+
+    const channelId = videoResponse.data.items[0].snippet.channelId;
+    const channelResponse = await youtubeApi.get("/channels", {
       params: {
-        part: 'snippet',
+        part: "snippet,statistics",
+        id: channelId,
+      },
+    });
+
+    return {
+      videoDetails: videoResponse.data.items[0],
+      comments: commentsResponse.data.items,
+      channelDetails: channelResponse.data.items[0],
+    };
+  } catch (error) {
+    console.error("Error fetching video details:", error);
+    throw error;
+  }
+};
+
+const fetchRelatedVideos = async (videoId) => {
+  try {
+    const relatedResponse = await youtubeApi.get("/search", {
+      params: {
+        part: "snippet",
         relatedToVideoId: videoId,
-        type: 'video',
+        type: "video",
         maxResults: 15,
       },
     });
 
-    const videoIds = relatedResponse.data.items.map(item => item.id.videoId).join(',');
-    const videoResponse = await youtubeApi.get('/videos', {
+    const videoIds = relatedResponse.data.items
+      .map((item) => item.id.videoId)
+      .join(",");
+    const videoResponse = await youtubeApi.get("/videos", {
       params: {
-        part: 'snippet,statistics,contentDetails',
+        part: "snippet,statistics,contentDetails",
         id: videoIds,
       },
     });
 
     return videoResponse.data.items;
   } catch (error) {
-    console.error('Error fetching related videos:', error);
+    console.error("Error fetching related videos:", error);
     throw error;
   }
 };
 
-export const fetchVideosByCategory = async (categoryId, pageToken = '') => {
-  try {
-    const response = await youtubeApi.get('/videos', {
-      params: {
-        part: 'snippet,statistics,contentDetails',
-        chart: 'mostPopular',
-        maxResults: MAX_RESULTS,
-        pageToken,
-        videoCategoryId: categoryId,
-        regionCode: 'US',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching videos by category:', error);
-    throw error;
-  }
-  
-};
-
-export const fetchChannelDetails = async (channelId) => {
-  try {
-    const response = await youtubeApi.get('/channels', {
-      params: {
-        part: 'snippet,statistics',
-        id: channelId,
-      },
-    });
-    return response.data.items[0];
-  } catch (error) {
-    console.error('Error fetching channel details:', error);
-    throw error;
-  }
-};
-
-export const fetchVideoComments = async (videoId) => {
-  try {
-    const response = await youtubeApi.get('/commentThreads', {
-      params: {
-        part: 'snippet,replies',
-        videoId: videoId,
-        maxResults: 20,
-        order: 'relevance',
-      },
-    });
-    return response.data.items;
-  } catch (error) {
-    console.error('Error fetching comments:', error);
-    throw error;
-  }
+export {
+  fetchPopularVideos,
+  searchVideos,
+  fetchVideosByCategory,
+  fetchVideoDetails,
+  fetchRelatedVideos,
 };

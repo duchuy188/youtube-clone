@@ -1,15 +1,17 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  FaHome, FaCompass, FaHistory, FaYoutube, FaClock, FaThumbsUp, 
+  FaHome, FaHistory, FaYoutube, FaClock, FaThumbsUp, 
   FaPlayCircle, FaGamepad, FaNewspaper, FaTrophy, FaLightbulb,
   FaMusic, FaFilm, FaBroadcastTower, FaFire, FaShoppingBag
 } from 'react-icons/fa';
 import './Sidebar.css';
 
 function Sidebar({ isOpen }) {
+  const navigate = useNavigate();
+
   const mainMenu = [
-    { icon: <FaHome />, label: 'Home', active: true },
-    { icon: <FaCompass />, label: 'Explore' },
+    { icon: <FaHome />, label: 'Home', path: '/' },
+    { icon: <FaFire />, label: 'Trending', path: '/trending' },
     { icon: <FaYoutube />, label: 'Shorts' },
     { icon: <FaYoutube />, label: 'Subscriptions' }
   ];
@@ -29,7 +31,7 @@ function Sidebar({ isOpen }) {
   ];
 
   const exploreMenu = [
-    { icon: <FaFire />, label: 'Trending' },
+    { icon: <FaFire />, label: 'Trending', path: '/trending' },
     { icon: <FaMusic />, label: 'Music' },
     { icon: <FaGamepad />, label: 'Gaming' },
     { icon: <FaNewspaper />, label: 'News' },
@@ -40,11 +42,21 @@ function Sidebar({ isOpen }) {
     { icon: <FaShoppingBag />, label: 'Shopping' }
   ];
 
+  const handleItemClick = (path) => {
+    if (path) {
+      navigate(path);
+    }
+  };
+
   return (
     <div className={`sidebar ${!isOpen ? 'closed' : ''}`}>
       <div className="sidebar-section">
         {mainMenu.map((item, index) => (
-          <div key={index} className={`sidebar-item ${item.active ? 'active' : ''}`}>
+          <div 
+            key={index} 
+            className="sidebar-item"
+            onClick={() => handleItemClick(item.path)}
+          >
             {item.icon}
             <span>{item.label}</span>
           </div>
@@ -53,7 +65,11 @@ function Sidebar({ isOpen }) {
 
       <div className="sidebar-section">
         {libraryMenu.map((item, index) => (
-          <div key={index} className="sidebar-item">
+          <div 
+            key={index} 
+            className="sidebar-item"
+            onClick={() => handleItemClick(item.path)}
+          >
             {item.icon}
             <span>{item.label}</span>
           </div>
@@ -63,7 +79,11 @@ function Sidebar({ isOpen }) {
       <div className="sidebar-section">
         <h3 className="sidebar-title">Subscriptions</h3>
         {subscriptionsMenu.map((item, index) => (
-          <div key={index} className="sidebar-item">
+          <div 
+            key={index} 
+            className="sidebar-item"
+            onClick={() => handleItemClick(item.path)}
+          >
             {item.icon}
             <div className="subscription-info">
               <span>{item.label}</span>
@@ -76,7 +96,11 @@ function Sidebar({ isOpen }) {
       <div className="sidebar-section">
         <h3 className="sidebar-title">Explore</h3>
         {exploreMenu.map((item, index) => (
-          <div key={index} className="sidebar-item">
+          <div 
+            key={index} 
+            className="sidebar-item"
+            onClick={() => handleItemClick(item.path)}
+          >
             {item.icon}
             <span>{item.label}</span>
           </div>
