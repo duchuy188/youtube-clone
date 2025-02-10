@@ -12,6 +12,7 @@ function Sidebar({ isOpen }) {
   const mainMenu = [
     { icon: <FaHome />, label: 'Home', path: '/' },
     { icon: <FaFire />, label: 'Trending', path: '/trending' },
+    { icon: <FaNewspaper />, label: 'News', path: '/news' },
     { icon: <FaYoutube />, label: 'Shorts' },
     { icon: <FaYoutube />, label: 'Subscriptions' }
   ];
